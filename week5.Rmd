@@ -1,0 +1,492 @@
+---
+title: "Week5"
+author: "Réka Forgó"
+date: "2025-09-30"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+*Good afternoon*  
+Today we are going to work with in a R markdown file for the first time. It works just like a Python notebook with cell-blocks of r code and in between you can write (like I am here). 
+The goal of this markdown is that you have tried to translate some of the exercises you already have done in python. We are doing this so you can get your hands dirty with some syntax translation and hopefully get a bit more comfortable in r. 
+
+
+**Structure of the markdown:**  
+- Loading packages
+- Variables
+- Container variables
+- Accessing elements
+- Conditional statements
+- Loops 
+- Functions
+- Data organisation
+
+
+Start with the first exercise, and then continue in order. Feel free to work together, and see how far you can get.   
+The important thing is to learn, not to necesarily do it all!
+________________________________________________________________________________________
+
+
+## Loading packages
+Instead of installing and importing libraries in r seperately, we can do it in one go using the library pacman. It has a function p_load that allows for importing multiple libraries in one go! 
+
+```{r Loading packages}
+# Install pacman first (only once):
+install.packages("pacman")
+
+# Load and install packages:
+pacman::p_load(ggplot2, dplyr, tidyr) #So it installs the library if needed + imports it in one step.
+
+```
+
+
+## Variables 
+Add some values to the variables below and test if they are the right variable type.  
+
+Remember that in R, assignment is usually done with <- instead of a = as it is in python. 
+Strings are written with quotation marks (" ").
+Boolean values are written as TRUE or FALSE (all caps).
+You can use the class() function in R to check the data type of a variable.
+
+
+```{r}
+# Adding values
+my_string <- "Hello there"
+my_integer <- 13
+my_boolean <- TRUE
+my_float <- 4.54
+
+# Testing the class
+class(my_float)
+
+```
+
+
+## Container variables
+In R we have slight differences in the container types. 
+
+In Python, we have lists, the equivalent in R is also called a list, created with the list() function.  
+
+In Python, dictionaries store key–value pairs. In R, there is no direct equivalent, but you can achieve something similar with a named list (created with list(name = value)), or in some cases with environments or data frames, depending on the use case.
+
+In Python, tuples are ordered collections that cannot be changed (immutable). In R, there is no immutable equivalent. The closest structure is a vector (created with c()), which is ordered but still mutable.
+
+In Python, sets are unordered collections of unique items. In R, there is no dedicated set type, but you can use vectors together with functions like unique() to achieve the same behavior.
+
+
+Make a list and a vector 
+
+```{r}
+my_list <- list(1, "two", "million", 4.5)
+  
+my_namedlist <- list(name = "Réka", age = 22, city = "Aarhus")
+
+my_vector <- c(1, 2, 3, 4, 5)
+
+```
+
+
+## Accessing elements 
+Now we would like to access elements in our container variables, this is almost as in python. 
+Vectors → accessed with [ ] using numeric positions.
+Lists → accessed with [ ] for sublists, [[ ]] for elements, and $ for named elements.
+
+Examples:
+```{r}
+
+# Vectors
+
+numbers <- c(10, 20, 30, 40)
+
+numbers[1]       # Access the first element → 10
+numbers[c(2, 4)] # Access the 2nd and 4th elements → 20, 40
+
+#When passing multiple numbers in r we usually use a vector like here c() to specify the numbers we need. 
+
+# Lists / named lists 
+my_list <- list(name = "Johanne", age = 25, scores = c(90, 85, 88))
+
+my_list[1]      # Returns a sublist containing the first element → list(name = "Johanne")
+my_list[[1]]    # Returns the actual element → "Johanne"
+my_list$age    # Access by age → 25
+my_list[[3]]    # Access the scores vector → c(90, 85, 88)
+
+```
+
+Excercise - access some elements in your lists and vector
+```{r}
+# Access the 2nd element in my_list
+
+my_list[[2]]
+
+# Access the age  in my_namedlist
+my_namedlist$city
+
+# Access the 3rd element in my_vector
+my_vector[3]
+
+
+```
+
+
+## Condtional statements
+In r we have to put the condition into a paranthesis () and wrap the whole statement in curly brackets {}
+
+```{r}
+# The if statement
+
+x <- 5
+if (x > 0) {
+  print("x is positive")
+}
+
+```
+
+```{r}
+# The else statement
+
+x <- -3
+if (x > 0) {
+  print("x is positive")
+} else {  # Here there is a new set of curly brackets because there is a new condition
+  print("x is not positive")
+}
+
+```
+
+```{r}
+# The else if (elif) statement
+
+x <- 0
+if (x > 0) {
+  print("x is positive")
+} else if (x < 0) {
+  print("x is negative")
+} else {
+  print("x is zero")
+}
+
+```
+
+Excercise: translate the following conditional statement from python to R
+
+x = 5
+if x > 5:
+    print("x is greater than 5")
+elif x == 5:
+    print("x is equal to 5")
+else:
+    print("x is less than 5")
+    
+```{r contional statement}
+
+x <- 5
+if (x > 5) {
+  print("x is greater than 5")
+} else if (x == 5) {
+  print("x is equal to 5")
+} else {
+  print("x is less than 5")
+}
+
+
+```
+
+*logical orerators*
+
+
+
+## Loops 
+The syntax for loops is the same as for conditionals :)
+
+Maybe you remember that python was indexed from 0 - r is not. Here we start at one.
+What will this code chunck print?
+```{r}
+# a for loop
+
+for (i in 1:5) {
+  print(i)
+}
+
+
+```
+We can see it prints out all the numbers from 1 to 5.
+
+```{r}
+x <- 1
+while (x <= 5) {
+  print(x)
+  x <- x + 1
+}
+```
+
+Excercise: translate the following loop from python to R
+
+fruits = ["apple", "banana", "cherry"]
+for fruit in fruits:
+    print(fruit)
+
+
+```{r}
+
+fruits <- c("apple", "banana", "cherry")
+
+for (fruit in fruits) {
+  print(fruit)
+}
+
+```
+
+
+## Functions
+In r we have to specify a function using the function called function(). What?? Ik it's sort of wierd but hang in. 
+
+So the syntax is like this:
+
+function_name <- function(arguments) {
+  # code to execute
+  return(value) # is we would like to return soemthing
+}
+
+```{r}
+add_numbers <- function(a, b) {
+  sum <- a + b
+  return(sum)
+}
+
+add_numbers(3, 5)
+```
+
+Excercise: translate the following function into R
+
+# celsius to fahrenheit converter
+def celcius_to_fahrenheit(celcius):
+    F = (celcius * 9/5) +32
+    print(f"{celcius} degrees celcius is the equivilant of {F} degress fahrenheit")
+    return F
+
+celcius_to_fahrenheit(0)
+
+
+## Data Organisation
+We will do a bit of data mangling as well using the same dataset, which is built in to R (smart).
+
+
+```{r}
+# Loading the data 
+data(iris)  # load the dataset
+class(iris)
+
+head(iris)  # view the first few rows (like Python's head())
+
+```
+
+Try to click on the 'iris' dataset in the enviroment in the top right corner to actually inspect the dataset. 
+
+
+*Accessing elements*
+Acessing elements can be done in different ways, just like accessing values in container variables.
+First, We access _Columns_
+```{r accessing columns}
+# Using the $ operator
+iris$Sepal.Length
+
+# Try to access another column this way
+iris$Species
+
+```
+Can you figure out what the numbers in the right side stands for? - They stand for the row number.
+
+```{r accessing columns}
+# Using column index
+iris[, 1]
+
+# Try to access another column this way
+iris[, 3]
+
+
+```
+
+
+```{r accessing columns}
+# Using column name in brackets
+iris[ , "Sepal.Length"]
+
+# Try to access another column this way
+iris[ , "Species"]
+```
+
+Then, We access rows. And we do that by using numerical indicies (as they dont have names only numbers)
+```{r}
+# First row
+iris[1, ]
+
+# First three rows
+iris[1:3, ]
+
+```
+
+If We want to access both rows and columns we can do that. Remember rows comes first: iris[rows, columns]
+
+Excercise: access both rows and columns
+```{r}
+
+# Try to extract rows 1-3 and  columns 1-2
+iris[1:3, 1:2]
+
+
+# What about a single element: row 3, column 1
+iris[3, 1]
+
+
+# You can also use column name for a specific row. Try to get the same element as above
+iris[3, "Sepal.Length"]
+
+
+
+
+```
+
+*Subsetting*
+If you want to subset a part of the data you can do that using the subset() function and pass it a condition
+```{r}
+#Example
+subset(iris, Sepal.Length > 5) # Select rows where Sepal.Length > 5
+
+
+# If you only want specific data for this subset and not the whole dataframe you can select which columns you want. 
+subset(iris, Sepal.Length > 5, select = c(Sepal.Length, Species))
+
+
+```
+
+You can also find the max and median using the functions max() and median(). In R we wrap the function around what we want to find e.g. max(iris$Petal.Length) where we did .max() at the end in python. 
+
+```{r}
+# find the max and median of a column
+
+max <- max(iris$Petal.Length)
+  
+median <- median(iris$Petal.Length)
+
+max
+median
+```
+
+
+*Sorting* 
+You can sort a vector or a column of a data frame using sort() for a vector or order() for a column in a dataframe.
+```{r}
+# Sort a data frame by a column
+iris_sorted <- iris[order(iris$Sepal.Length), ]  # ascending by Sepal.Length
+
+# Descending add a ,decreasing = TRUE inside the paranthesis
+iris_sorted_desc <- iris[order(iris$Sepal.Length, decreasing = TRUE), ]
+
+
+
+```
+
+*Flipping/reversing*
+To reverse a vector or the order of rows in a data frame, use rev()
+
+```{r}
+
+# Reverse rows in a data frame
+iris_reversed <- iris[rev(1:nrow(iris)), ]
+
+```
+
+
+
+
+# Find five flaws 
+In this exercise, you will work with the iris dataset. Your goal is to find the 5 flaws in two excercises, all flaws are syntactical errors:
+
+
+Excercise 1
+Subset the dataset to include only rows where Sepal.Length is greater than the median, Petal.Width is less than 1.5, and Species is "setosa".
+Calculate the maximum and minimum of Sepal.Length in this subset and lastly calculate the mean of Petal.Length in this subset.
+
+```{r}
+median = median(iris$Sepal.Length)
+median
+
+range(iris$Sepal.Length)
+
+range(iris$Petal.Length[iris$Species == "setosa"])
+
+subset_flowers <- subset(iris, Sepal.Length > median & Petal.Width < 1.5 & Species == "setosa")
+
+subset_flowers
+
+```
+
+
+```{r} 
+#Make comments about the flaws so you remember if you stumble upon them agian
+
+median_sepal <- median(iris$Sepal.Length) # had incorrect function name, should be median()
+
+subset_flowers <- subset(iris, Sepal.Length > median_sepal & Petal.Width < 1.5 & Species == "setosa") # had incorrect logical operator, should be & instead of &&
+
+max_length <- max(subset_flowers$Sepal.Length) # was missing closing parenthesis
+
+min_length <- min(subset_flowers$Sepal.Length) # had incorrect function name, should be min()
+
+mean_petals <- mean(subset_flowers$Petal.Length) # had incorrect argument order, should be mean(subset_flowers$Petal.Length)
+
+max_length
+min_length
+mean_petals
+subset_flowers
+
+
+#double checking why is the dataframe empty
+
+median = median(iris$Sepal.Length)
+median
+range(iris$Sepal.Length)
+range(iris$Petal.Length[iris$Species == "setosa"])
+subset_flowers_all <- subset(iris, Sepal.Length > median & Petal.Width < 1.5)
+subset_flowers_all
+
+```
+Comment: It seems like there are no Setosa flowers with a sepal length greater than the median (5.8) have also a petal width greater than 1.5.
+
+Exercise 2 
+In this exercise, you will write and use a function to filter the iris dataset. The function should:
+
+Take a species name and a minimum petal length as input.
+Return all rows where Species matches the input and Petal.Length is greater than the minimum.
+Then, loop over all unique species in the dataset and print the number of flowers returned for each.
+
+```{r}
+filter_species <- function (species_name, min_petal) {
+  filtered <- subset(iris, Species == species_name & Petal.Length > min_petal)
+  return(filtered)
+} # had incorrect assignment operator, should be == instead of =; also missing curly braces around function body
+
+for (s in unique(iris$Species)) {   
+  flowers <- filter_species(s, 1.5)
+  print(paste("Number of flowers for", s, "=", nrow(flowers)))
+} # had incorrect column name, should be Species with a capital S
+```
+
+
+
+Juhuu - now you finished this translation markdown, so now you are super ready to write some r-code!!
+
+
+
+
+
+
+
+
+
+
+

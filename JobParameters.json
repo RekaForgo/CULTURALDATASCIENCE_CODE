@@ -1,1 +1,46 @@
-{"siteVersion":3,"request":{"application":{"name":"terminal-ubuntu","version":"Aug2025"},"product":{"id":"u1-standard-h-1","category":"u1-standard-h","provider":"ucloud"},"name":"test_integration_git","replicas":1,"parameters":{"requirements":{"type":"file","path":"/1093472/ucloud_init_env_final.sh","readOnly":false}},"resources":[{"type":"file","path":"/CulturalDataScience","readOnly":false}],"timeAllocation":{"hours":1,"minutes":0,"seconds":0},"resolvedProduct":null,"resolvedSupport":null,"allowDuplicateJob":true,"sshEnabled":false},"resolvedResources":{"ingress":{}},"machineType":{"cpu":1,"memoryInGigs":6}}
+{
+    "siteVersion": 3,
+    "request": {
+        "application": {
+            "name": "terminal-ubuntu",
+            "version": "Aug2025"
+        },
+        "product": {
+            "id": "u1-standard-h-1",
+            "category": "u1-standard-h",
+            "provider": "ucloud"
+        },
+        "name": "test_integration_git",
+        "replicas": 1,
+        "parameters": {
+            "requirements": {
+                "type": "file",
+                "path": "/1093472/ucloud_init_env_final.sh",
+                "readOnly": false
+            }
+        },
+        "resources": [
+            {
+                "type": "file",
+                "path": "/CulturalDataScience",
+                "readOnly": false
+            }
+        ],
+        "timeAllocation": {
+            "hours": 1,
+            "minutes": 0,
+            "seconds": 0
+        },
+        "resolvedProduct": null,
+        "resolvedSupport": null,
+        "allowDuplicateJob": true,
+        "sshEnabled": false
+    },
+    "resolvedResources": {
+        "ingress": {}
+    },
+    "machineType": {
+        "cpu": 1,
+        "memoryInGigs": 6
+    }
+}

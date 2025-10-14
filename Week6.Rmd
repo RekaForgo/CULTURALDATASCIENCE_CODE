@@ -1,0 +1,302 @@
+---
+title: "Week6"
+author: "Réka Forgó"
+date: "2025-10-14"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+*Good afternoon*  
+Today we are going to work with some of the statistical concepts Anna went over yesterday. We will check for normality and implement correlation tests in R. The goal of this markdown is to play around with plotting, transorming and testing assumptions of normality and try to gain an understanding of the concepts. 
+
+
+**Structure of the markdown:**  
+Part 1:
+- Visually inspect normality of data
+- Test assumptions of normality
+- Try standardization
+- Perform correlation tests 
+
+Part 2:
+- Apply these techniques in a real data example
+
+
+Start with the first exercise, and then continue in order. Feel free to work together, and see how far you can get.   
+The important thing is to learn, not to necessarily do it all!
+________________________________________________________________________________________
+
+
+## Load the packages for today
+
+```{r}
+# Install pacman first (only once):
+install.packages("pacman")
+
+# Load and install packages:
+pacman::p_load(ggplot2, dplyr, tidyr) #So it installs the library if needed + imports it in one step.
+```
+
+# Part 1:
+For Part one we will walk through the necessary steps of making an analysis of cultural data (except making and fitting models - but that's for next week :)). 
+
+_We would like to investigate whether the personal savings ratio is larger for countries with large disposable income_
+
+## The dataset for the first part
+We are gonna work with the df_lcs dataset which is a built-in classic dataset in R, containing economic and demographic indicators for 50 countries, covering the years 1950–1960.
+
+```{r}
+df_lcs <- as.data.frame(LifeCycleSavings)
+head(df_lcs)
+```
+The dataset has 50 rows (countries) and 5 numeric variables:
+
+sr – Aggregate personal savings ratio - Average % of disposable personal income that households save.
+pop15 – % of population under age 15
+pop75 – % of population over age 75
+dpi – Real per-capita disposable income
+ddpi – Growth rate of dpi
+
+
+## Check for normality
+- Histograms
+- QQ-plots
+- Statistical normality tests
+
+
+First we plot the data to visually inspect how the data is distributed - we hope for normal distributions. 
+We use 'ggplot' to plot in r and there is so many cool plot you can make to visualise your data. If you would like to try and spice things up, go to: https://r-graph-gallery.com and look around. 
+
+```{r}
+# Now we plot the histograms of the savings ratio and the disposable income 
+
+# Savings Ratio
+ggplot(df_lcs, aes(x = sr)) + # Here we specify the aesthetics (Which is "just" specifying the x and potentially the y axis.)
+  geom_histogram(aes(y = ..density..), bins = 15, fill = "lightblue", color = "black") + # Here we specify the type of plot and that it should be a density plot. 
+  geom_density(color = "red", size = 1) +
+  labs(title = "Distribution of Savings Ratio (sr)", x = "Savings Ratio", y = "Density") # And we give it a title and some axis names
+
+#Disposable income
+ggplot(df_lcs, aes(x = dpi)) +
+  geom_histogram(aes(y = ..density..), bins = 15, fill = "lightgreen", color = "black") +
+  geom_density(color = "red", size = 1) +
+  labs(title = "Distribution of Disposable Income (dpi)", x = "Disposable Income", y = "Density")
+
+```
+
+_Excercise_: Explain what you see, are the distributions normal, if not, describe how they look. 
+
+
+## QQ plots
+The QQ-plot stands for Quantile-Quantile plot. Is plots the thoretical quantiles on the x-axis. That is the quantiles the data would have if it was perfectly normal, and then it plots the actual quantiles on the y-axis. 
+
+If you forgot, quantiles are cut points that divide your data into equal-sized groups. 
+
+```{r}
+# Now we plot the QQ-plots of the savings ratio and the disposable income 
+
+ggplot(df_lcs, aes(sample = sr)) + #For qq-plots we specify a 'sample' instead of an x or y axis
+  stat_qq(color = "blue") + # Colours 
+  stat_qq_line(color = "red") +
+  labs(title = "Q-Q Plot: Savings Ratio (sr)")
+
+ggplot(df_lcs, aes(sample = dpi)) +
+  stat_qq(color = "darkgreen") +
+  stat_qq_line(color = "red") +
+  labs(title = "Q-Q Plot: Disposable Income (dpi)")
+
+```
+
+_Exercise_: Does this fit with what you observed before when you plotted the histograms? Explain why.
+
+
+## Test for normality - Shapiro-wilk test
+
+The Shapiro-Wilk test is a statistical test used to check whether a variable is approximately normally distributed. It is one of the most common tests for normality in R. It test whether there is strong enough evidence to reject the null hypothesis, which is that the data is normal. 
+
+How It Works:
+- Null hypothesis (H₀): The data are normally distributed.
+- Alternative hypothesis (H₁): The data are not normally distributed.
+
+The test calculates a W statistic that measures how well the data’s distribution matches a normal distribution.
+
+
+```{r}
+shapiro.test(df_lcs$sr)
+shapiro.test(df_lcs$dpi)
+
+```
+
+How to interpret the results:
+Look at the p-value:
+- p > 0.05 → Fail to reject H₀ → Data can be treated as approximately normal.
+- p ≤ 0.05 → Reject H₀ → Consider non-parametric methods or transformations.
+
+W statistic:
+- W ranges from 0 to 1.
+- Values closer to 1 indicate data closer to normal.
+
+_Exercise_: Report the results for both varables, are they normal and why/why not?
+
+
+## Transformation - Lets see if we can force the dpi-variable to become normal. 
+We will use log() (logarithmic) and sqrt() (square root) transformation methods and see if it helps.
+
+```{r}
+
+# Log transformation
+df_lcs$log_dpi <- log(df_lcs$dpi)
+
+# Sqrt transformation
+df_lcs$sqrt_dpi <- sqrt(df_lcs$dpi)
+
+#plot it 
+ggplot(df_lcs, aes(x = log_dpi)) +
+  geom_histogram(aes(y = ..density..), bins = 15, fill = "lightgreen", color = "black") +
+  geom_density(color = "red", size = 1) +
+  labs(title = "Distribution of Disposable Income (dpi)", x = "Disposable Income", y = "Density")
+
+ggplot(df_lcs, aes(x = sqrt_dpi)) +
+  geom_histogram(aes(y = ..density..), bins = 15, fill = "lightgreen", color = "black") +
+  geom_density(color = "red", size = 1) +
+  labs(title = "Distribution of Disposable Income (dpi)", x = "Disposable Income", y = "Density")
+
+
+# test both
+shapiro.test(df_lcs$log_dpi)
+shapiro.test(df_lcs$sqrt_dpi)
+
+```
+_Excercise_: Does any of the transformations make the dpi variable normal?
+
+
+## Standardization 
+For this simple correlation analysis, we will skip it, because the results are already interpretable. However, if we wanted to fit a statistical model (e.g., regression) to this data, standardization would be useful. This is because the model coefficients would then represent changes in standard deviations, rather than raw units, making them easier to compare across variables.
+
+This is a method that you will not have to use often, but it is important to know. 
+
+```{r}
+# This is how you standardize the data (transform to z-scores)
+scaled_data <- scale(df_lcs)
+head(scaled_data)
+
+```
+
+
+_Exercise_: Is standardized data easy to directly interpret? why/why not?
+
+## Correlation tests
+Now, We unfortunately do not have normally distributed data so we should use the spearman correlation test. However, for teaching purposes you will do both and report them to compare the results. 
+
+Pearson:
+Measures: Linear relationship
+Assumptions: Variables approximately normal, linear, no extreme outliers
+Use when: Data are normal and linear
+
+Spearman: 
+Measures: Monotonic relationship (rank-based)
+Assumptions: None
+Use when: Data are skewed, contain outliers, or relationship is monotonic but non-linear
+
+```{r}
+# Pearsons correlation - Assumes normality 
+
+cor.test(df_lcs$sr, df_lcs$dpi, method = "pearson")
+
+```
+_Excercise_: Report on the results. Whats the confidence interval, the p-value and the correlation and how should they be interpreted?
+You can find the APA format of reporting here: https://www.statology.org/how-to-report-pearson-correlation/ :)
+
+
+```{r}
+# Spearman correlation - does not assume normality
+
+cor.test(df_lcs$sr, df_lcs$dpi, method = "spearman")
+
+```
+_Excercise_: Report on the results. Whats the rho and the p-value and how should they be interpreted?
+You can find the APA format of reporting Spearmans correlation here: https://www.statology.org/how-to-report-spearman-correlation/ :) 
+
+
+Okay, so why do we have different result?
+
+_Excercise_: What causes the difference in the results?
+
+
+
+Well done!! now for part 2
+
+
+# Part 2:
+## Now we try and use our new knowlegde for a mini-project. For this I have made a checklist you can run through
+
+### Step 1: Understand Your Data
+- [ ] Load the dataset into R  
+- [ ] Identify which variables are relevant for your analysis  
+
+### Step 2: Explore Distributions
+- [ ] Plot density histograms for the selected variables - or maybe try some other plots (violinplots, boxplots etc.)
+- [ ] Create Q-Q plots to visually check normality  
+- [ ] Run a Shapiro-Wilk test for normality
+
+### Step 3: Standardize Variables (if needed)
+- [ ] Apply `scale()` to standardize if comparing across variables  
+
+### Step 4: Check Assumptions for Correlation
+- [ ] If variables look normally distributed → Pearson correlation  
+- [ ] If variables are not normal or have outliers → Spearman correlation  
+
+### Step 5: Run Correlation Tests
+- [ ] Compute Pearson correlation with `cor.test(x, y, method="pearson")`  
+- [ ] Compute Spearman correlation with `cor.test(x, y, method="spearman")`  
+- [ ] Interpret results  
+
+### Step 6: Interpret Results
+- [ ] Report the correlation coefficient (strength & direction of relationship)  
+- [ ] Report the p-value (evidence for/against significant relationship)  
+- [ ] Relate findings back to the research question / context of the dataset  
+
+
+You now have a lot of freedom to find a good question to test, but first lets take a look at the data :)
+
+```{r }
+df_states <- as.data.frame(state.x77)
+head(df_states)
+```
+
+What dataframe are you looking at, make a note of the column names and their meaning and discuss with your group what an interesting thing to investigate could be. 
+
+Few points of focus:
+- Try to set up your analysis like part one 
+- Remember to comment your code, so you understand whats happening. 
+- Explain whats happening along the way and report on your results
+
+Now the floor is yours ...
+
+```{r}
+# Where to begin?
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
