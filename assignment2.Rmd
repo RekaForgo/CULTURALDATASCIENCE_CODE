@@ -1,0 +1,167 @@
+---
+title: "Assignment 02"
+author: "Réka Forgó"
+date: "2025-10-15"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(
+  echo = TRUE,          # show code
+  comment = "",         # removes the leading '#'
+  message = FALSE,      # suppress package load messages
+  warning = FALSE,      # suppress warnings
+  fig.align = "left", # center figures
+  fig.width = 7,        # control figure width
+  fig.height = 4     # control figure height
+)
+
+```
+
+## Assignment 02
+
+Correlation and Regression
+
+### Part 1
+Use the ‘divorce_margarine’ dataset from the ‘dslabs’ package to explore the relationship between margarine consumption and divorce rates in Maine. Visualise the data, make a correlation test. Report the correlation coefficient and p-value in APA format, and briefly discuss the results in a practical way.
+
+```{r}
+pacman::p_load(ggplot2, dplyr, tidyr, dslabs, car, pastecs)
+```
+
+
+```{r}
+
+df <- as.data.frame(divorce_margarine)
+head(df)
+
+```
+
+**The dataset: **
+
+*Columns:*
+year: year,
+divorce_rate: Divorce rate in Maine(per 1000 people),
+margarine_consumption: Margarine consumption per capita in US(lbs).
+The dataset contains datapoints for 10 different years, from 2000 to 2009.
+
+
+```{r, warnings= FALSE}
+#normality checks
+
+ggplot(df, aes(x = divorce_rate_maine)) +
+  geom_histogram(aes(y = ..density..), bins = 15, 
+                 fill = "palevioletred", color = "black") +
+  geom_density(color = "red", linewidth = 1) +
+  labs(title = "Distribution of divorce rate in Maine", 
+       x = "Divorce Rate", y = "Density") +
+  theme_minimal()
+
+ggplot(df, aes(x = margarine_consumption_per_capita)) +
+  geom_histogram(aes(y = ..density..), bins = 15, 
+                 fill = "goldenrod1", color = "black") +
+  geom_density(color = "red", linewidth = 1) +
+  labs(title = "Distribution of margarine consumption", 
+       x = "Margarine Consumption", y = "Density") +
+  theme_minimal()
+
+ggplot(df, aes(sample = divorce_rate_maine)) + 
+  stat_qq(color = "palevioletred") + 
+  stat_qq_line(color = "red") +
+  labs(title = "Q-Q Plot: Divorce Rate Maine") +
+  theme_minimal()
+
+ggplot(df, aes(sample = margarine_consumption_per_capita)) + 
+  stat_qq(color = "goldenrod1") + 
+  stat_qq_line(color = "red") +
+  labs(title = "Q-Q Plot: Margarine Consumption") +
+  theme_minimal()
+
+```
+We can see that we have very few data points, so the histograms are not very informative. The Q-Q plots show that the data points are roughly following the diagonal line, which suggests that the data is approximately normally distributed.
+
+```{r}
+shapiro.test(df$divorce_rate_maine)
+shapiro.test(df$margarine_consumption_per_capita) 
+
+round(pastecs::stat.desc(cbind(df$divorce_rate_maine, 
+                               df$margarine_consumption_per_capita), 
+                         basic = FALSE, norm = TRUE), digits = 2)
+```
+For both the divorce rate and margarine consumption, the Shapiro-Wilk test yields *p* values greater than .05, which means we can treat the data as approximately normally distributed. Both *W* statistic values are close to 1 further supporting the assumption of normality. We can continue with a Pearson correlation test. (For this simple correlation test we don't need to standardize)
+
+```{r, warnings= FALSE}
+cor.test(df$divorce_rate_maine, 
+         df$margarine_consumption_per_capita, 
+         method = "pearson")
+
+#visualise both variables on one plot by year
+
+ggplot(df, aes(x = year)) +
+  geom_line(aes(y = scale(divorce_rate_maine), 
+                color = "Divorce Rate in Maine"), linewidth = 1) +
+  geom_line(aes(y = scale(margarine_consumption_per_capita), 
+                color = "Margarine Consumption per Capita"), linewidth = 1) +
+  scale_x_continuous(breaks = 2000:2009) +
+  scale_color_manual(values = c("Divorce Rate in Maine" = "palevioletred",
+                                "Margarine Consumption per Capita" = "goldenrod1")) +
+  labs(
+    title = "Divorce Rate and Margarine Consumption in Maine (2000–2009)",
+    subtitle = "Standardized (z-score) values for comparison",
+    x = "Year", y = "Standardized Value (z)"
+  ) +
+  theme_minimal() +
+  theme(legend.title = element_blank(), legend.position = "top")
+```
+A Pearson correlation coefficient was computed to assess the linear relationship between divorce rate and margarine consumption in Maine. There was a statistically significant positive correlation between the two variables, *r*(8) = .99, *p* < .001, the CI was [.967, .998].
+
+In other words, there seems to be a positive correlation between margarine consumption and divorce rates in Maine, meaning the changes in margarine is consumption are associated with changes in divorce rates. 
+
+However, correlation does not mean causation, simply that margarine consumption and divorce rates seem to change together. There could be other factors that influence both variables, or it could be a coincidence.
+
+
+### Part 2
+
+Work with the ‘GSSvocab’ dataset from the ‘car’ package, focusing only on the year 1978 (subset that year and exclude missing values). Investigate how vocabulary test scores (vocab) are related to education (educ). Present the relationship in a plot, fit a regression model, and report results in APA format (coefficients, p-values, and R2), followed by a short practical interpretation.
+
+Extend the analysis by making a new model, where you include whether a person is native- born (nativeBorn) as a predictor. Again, visualise and model the relationship. Consider whether education and native-born status interact in predicting vocabulary, and if so, fit an interaction model. For each model, report results in APA format and explain the practical meaning.
+
+Finally, compare the models and discuss which one performs best based on p-values and R2, as well as the real-world interpretability of the result.
+
+```{r}
+df2 <- as.data.frame(GSSvocab)
+
+#subsetting
+df2 <- df2 %>%
+  filter(year == 1978) %>%
+  drop_na()
+
+head(df2)
+
+```
+
+**Dataset**
+
+*Columns:*
+year: year of the survey,
+gender: gender,
+nativeBorn: whether the respondent is native-born,
+ageGroup: age group of the respondent,
+educGroup: education group of the respondent,
+vocab: vocabulary test score,
+age: age of respondent,
+educ: years of education.
+
+This subset of the dataset contains 1477 observations from the year 1978.
+
+
+
+```{r}
+#checking types of variables
+str(df2)
+
+```
+We can see that these variables are not continous, and we need to ..
+
+

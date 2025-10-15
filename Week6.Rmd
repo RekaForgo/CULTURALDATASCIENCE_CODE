@@ -75,18 +75,21 @@ We use 'ggplot' to plot in r and there is so many cool plot you can make to visu
 # Savings Ratio
 ggplot(df_lcs, aes(x = sr)) + # Here we specify the aesthetics (Which is "just" specifying the x and potentially the y axis.)
   geom_histogram(aes(y = ..density..), bins = 15, fill = "lightblue", color = "black") + # Here we specify the type of plot and that it should be a density plot. 
-  geom_density(color = "red", size = 1) +
+  geom_density(color = "red", linewidth = 1) +
   labs(title = "Distribution of Savings Ratio (sr)", x = "Savings Ratio", y = "Density") # And we give it a title and some axis names
 
 #Disposable income
 ggplot(df_lcs, aes(x = dpi)) +
   geom_histogram(aes(y = ..density..), bins = 15, fill = "lightgreen", color = "black") +
-  geom_density(color = "red", size = 1) +
+  geom_density(color = "red", linewidth = 1) +
   labs(title = "Distribution of Disposable Income (dpi)", x = "Disposable Income", y = "Density")
 
 ```
 
 _Excercise_: Explain what you see, are the distributions normal, if not, describe how they look. 
+
+
+Neither of the distributions seems normal, the first one tends toward normality even though it's a bit left skewed, but the second one is very clearly right-skewed.
 
 
 ## QQ plots
@@ -110,6 +113,8 @@ ggplot(df_lcs, aes(sample = dpi)) +
 ```
 
 _Exercise_: Does this fit with what you observed before when you plotted the histograms? Explain why.
+
+Yes, the savings ratio seems to be closer to a normal distribution, as the points are closer to the line, while the disposable income is clearly not normal, as the points deviate significantly from the line, especially at the tails.
 
 
 ## Test for normality - Shapiro-wilk test
@@ -139,6 +144,11 @@ W statistic:
 - Values closer to 1 indicate data closer to normal.
 
 _Exercise_: Report the results for both varables, are they normal and why/why not?
+
+For the savings ratio, the p-value is greater than 0.05, so we fail to reject the null hypothesis and can treat the data as approximately normal. The W statistic is also relatively close to 1, supporting this conclusion.
+
+For the disposable income, the p-value is less than 0.05, so we reject the null hypothesis and conclude that the data are not normally distributed. The W statistic is still close to 1, but the low p-value indicates a significant deviation from normality.
+
 
 
 ## Transformation - Lets see if we can force the dpi-variable to become normal. 
@@ -171,6 +181,8 @@ shapiro.test(df_lcs$sqrt_dpi)
 ```
 _Excercise_: Does any of the transformations make the dpi variable normal?
 
+No, neither transformation makes it normally distributed, both p-values are below 0.05 (we can reject the null hypothesis)
+
 
 ## Standardization 
 For this simple correlation analysis, we will skip it, because the results are already interpretable. However, if we wanted to fit a statistical model (e.g., regression) to this data, standardization would be useful. This is because the model coefficients would then represent changes in standard deviations, rather than raw units, making them easier to compare across variables.
@@ -186,6 +198,8 @@ head(scaled_data)
 
 
 _Exercise_: Is standardized data easy to directly interpret? why/why not?
+
+It is not easy to directly interpret, because the values are in terms of standard deviations from the mean, rather than in the original units of measurement. This can make it harder to understand what a specific value means in a real-world context. But it makes it easier to compare across variables.
 
 ## Correlation tests
 Now, We unfortunately do not have normally distributed data so we should use the spearman correlation test. However, for teaching purposes you will do both and report them to compare the results. 
@@ -209,6 +223,10 @@ cor.test(df_lcs$sr, df_lcs$dpi, method = "pearson")
 _Excercise_: Report on the results. Whats the confidence interval, the p-value and the correlation and how should they be interpreted?
 You can find the APA format of reporting here: https://www.statology.org/how-to-report-pearson-correlation/ :)
 
+A Pearson correlation coefficient was computed to assess the linear relationship between savings ratio and disposable income. There was no statistically significant correlation between the two variables, r(48) = .22, p = .13, the CI was [.06, .47].
+
+ 
+
 
 ```{r}
 # Spearman correlation - does not assume normality
@@ -219,11 +237,14 @@ cor.test(df_lcs$sr, df_lcs$dpi, method = "spearman")
 _Excercise_: Report on the results. Whats the rho and the p-value and how should they be interpreted?
 You can find the APA format of reporting Spearmans correlation here: https://www.statology.org/how-to-report-spearman-correlation/ :) 
 
+Spearman’s rank correlation was computed to assess the relationship between savings ratio and disposable income. There was a positive correlation between the two variables, r(48) = .28, p = 0.04.
+
 
 Okay, so why do we have different result?
 
 _Excercise_: What causes the difference in the results?
 
+The two tests have different underlying assumptions and are sensitive to different aspects of the data. Pearson's correlation assumes normality and linearity, while Spearman's correlation is non-parametric and based on ranks. In this case, the data for disposable income is not normally distributed, which violates the assumptions of Pearson's test, leading to a non-significant result. Spearman's test, being more robust to non-normality and outliers, detected a significant relationship between the variables.
 
 
 Well done!! now for part 2
@@ -275,19 +296,100 @@ Few points of focus:
 
 Now the floor is yours ...
 
+**Question of interest**: Is there a correlation between life expectancy and illiteracy?
+
 ```{r}
-# Where to begin?
+# define variables
+life_exp <- df_states$`Life Exp`
+illiteracy <- df_states$Illiteracy
+
+# look at distributions
+
+# Histograms
+ggplot(df_states, aes(x = life_exp)) +
+  geom_histogram(aes(y = ..density..), bins = 15, fill = "darkorange", color = "black") +
+  geom_density(color = "black", size = 1) +
+  labs(title = "Distribution of Life Expectancy", x = "Life Expectancy", y = "Density")
+
+ggplot(df_states, aes(x = illiteracy)) +
+  geom_histogram(aes(y = ..density..), bins = 15, fill = "seagreen3", color = "black") +
+  geom_density(color = "black", size = 1) +
+  labs(title = "Distribution of Illiteracy", x = "Illiteracy", y = "Density")
+
+
+
+```
+
+
+```{r}
+# QQ-plots
+ggplot(df_states, aes(sample = life_exp)) +
+  stat_qq(color = "darkorange") +
+  stat_qq_line(color = "black") +
+  labs(title = "Q-Q Plot: Life Expectancy")
+
+ggplot(df_states, aes(sample = illiteracy)) +
+  stat_qq(color = "seagreen3") +
+  stat_qq_line(color = "black") +
+  labs(title = "Q-Q Plot: Illiteracy")
+
 
 ```
 
 
 
+```{r}
+# saphiro-wilk test
+
+shapiro.test(life_exp)
+shapiro.test(illiteracy)
+
+```
+
+From these measures we can conclude that life expectancy variable is approximately normally distributed, while the illiteracy variable is not normally distributed.
+
+```{r}
+#trying to transform the illiteracy variable
+
+# Log transformation
+log_illiteracy <- log(illiteracy)
+# Sqrt transformation
+sqrt_illiteracy <- sqrt(illiteracy)
+
+#plot it
+ggplot(data.frame(log_illiteracy), aes(x = log_illiteracy)) + 
+  geom_histogram(aes(y = ..density..), bins = 15, fill = "seagreen3", color = "black") +
+  geom_density(color = "black", size = 1) +
+  labs(title = "Distribution of Log-Transformed Illiteracy", x = "Log-Transformed Illiteracy", y = "Density")
+
+ggplot(data.frame(sqrt_illiteracy), aes(x = sqrt_illiteracy)) +
+  geom_histogram(aes(y = ..density..), bins = 15, fill = "seagreen3", color = "black") +
+  geom_density(color = "black", size = 1) +
+  labs(title = "Distribution of Sqrt-Transformed Illiteracy", x = "Sqrt-Transformed Illiteracy", y = "Density")
+
+# test both
+shapiro.test(log_illiteracy)
+shapiro.test(sqrt_illiteracy)
+```
+
+This means log transformation makes the illiteracy variable approximately normally distributed (although based on the histogram it is still very skewed), while the square root transformation does not. I will continue the analysis with the log-transformed illiteracy variable.
 
 
+```{r}
+#correlation tests
+# Pearson correlation
+
+cor.test(life_exp, log_illiteracy, method = "pearson")
+
+# Spearman correlation
+cor.test(life_exp, illiteracy, method = "spearman")
+
+```
 
 
+A pearson correlation was computed to assess the linear relationship between life expectancy and log-transformed illiteracy. There was a statistically significant negative correlation between the two variables, r(48) = -.57, p < .001, the CI was [-.73, -.34].
 
-
+The spearmans rank correlation was also conducted to assess robustness of results. There was a negative correlation between the two variables, r(48) = -.55, p < .001.
 
 
 
