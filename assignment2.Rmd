@@ -1,7 +1,7 @@
 ---
 title: "Assignment 02"
 author: "Réka Forgó"
-date: "2025-10-15"
+date: "2025-10-31"
 output: pdf_document
 ---
 
@@ -27,7 +27,7 @@ Correlation and Regression
 Use the ‘divorce_margarine’ dataset from the ‘dslabs’ package to explore the relationship between margarine consumption and divorce rates in Maine. Visualise the data, make a correlation test. Report the correlation coefficient and p-value in APA format, and briefly discuss the results in a practical way.
 
 ```{r}
-pacman::p_load(ggplot2, dplyr, tidyr, dslabs, car, pastecs)
+pacman::p_load(ggplot2, dplyr, tidyr, dslabs, car, pastecs, broom, performance, see)
 ```
 
 
@@ -156,12 +156,85 @@ educ: years of education.
 This subset of the dataset contains 1477 observations from the year 1978.
 
 
-
 ```{r}
 #checking types of variables
 str(df2)
 
 ```
-We can see that these variables are not continous, and we need to ..
+
+```{r}
+df2 %>%
+  group_by(educ) %>%
+  summarise(mean_vocab = mean(vocab)) %>%
+  ggplot(aes(x = educ, y = mean_vocab)) +
+  geom_point(size = 2) +
+  geom_smooth(method = "lm", se = TRUE, color = "blue") +
+  theme_minimal() +
+  labs(y = "Mean Vocabulary Score")
+```
+
+```{r}
+model1 <- lm(vocab ~ educ, data = df2)
+summary(model1)
+```
+A simple linear regression showed that education significantly predicted vocabulary scores, *F*(1, 1475) = 597.50, *p* < .001, explaining 28.8% of the variance (*R²* = .29). Each additional year of education was associated with an increase of 0.39 points in vocabulary score (*b* = 0.39, SE = 0.02, *t* = 24.44, *p* < .001).
 
 
+```{r}
+model2 <- lm(vocab ~ educ + nativeBorn, data = df2)
+summary(model2)
+```
+A multiple linear regression was conducted to test whether education and being native-born predict vocabulary scores. The overall model was significant, *F*(2, 1474) = 305.60, *p* < .001, explaining 29.3% of the variance in vocabulary scores (*R²* = .29, adjusted *R²* = .29). Education was a significant predictor (*b* = 0.39, SE = 0.02, *t* = 24.50, *p* < .001). This means each additional year of education was associated with a 0.39-point increase in vocabulary score. Native-born respondents scored on average 0.65 points higher than non-native respondents (*b* = 0.65, SE = 0.21, *t* = 3.16, *p* = .002), holding education constant.
+
+To conclude, vocabulary scores seem to increase with education, and even after accounting for education, native-born individuals tend to score slightly higher than foreign-born individuals.
+
+```{r}
+df2 %>%
+  group_by(educ, nativeBorn) %>%
+  summarise(mean_vocab = mean(vocab), .groups = "drop") %>%
+  ggplot(aes(x = factor(educ), y = mean_vocab, color = nativeBorn, group = nativeBorn)) +
+  geom_point(size = 2) +
+  geom_line() +
+  theme_minimal() +
+  labs(
+    title = "Mean Vocabulary Score by Education and Native-Born Status",
+    x = "Years of Education",
+    y = "Mean Vocabulary Score",
+    color = "Native-Born"
+  )
+```
+```{r}
+model3 <- lm(vocab ~ educ * nativeBorn, data = df2)
+summary(model3)
+```
+Last but not least, a linear regression with an interaction between education and native-born status was fitted to predict vocabulary scores. The overall model was significant, *F*(3, 1473) = 203.70, *p* < .001, explaining 29.3% of the variance (*R²* = .293, adjusted *R²* = .292). Education remained a significant predictor of vocabulary scores (*b* = 0.42, SE = 0.05, *p* < .001).
+Native-born status alone was not a significant predictor after accounting for the interaction (*b* = 0.95, *p* = .186). Crucially, the interaction term between education and native-born status was not significant (*b* = –0.03, SE = 0.06, *t* = –0.44, *p* = .663), indicating that the effect of education on vocabulary does not differ between native-born and non-native respondents.
+
+Education seems to predict vocabulary scores for both native-born and non-native individuals. Being native-born does not meaningfully change how education influences vocabulary performance.
+
+
+```{r}
+anova(model1, model2, model3)
+```
+
+An ANOVA was conducted to compare the three previous models. It shows, that adding native-born status significantly improved model fit over education alone, *F*(1, 1474) = 10.01, *p* = .0016, reducing the residual sum of squares slightly. But including the interaction between education and native-born status did not significantly improve the model, *F*(1, 1473) = 0.19, *p* = .663, with almost no change in the residual sum of squares.
+
+**Checking model assumptions**
+
+```{r, fig.width=6, fig.height=8}
+check_model(model1, base_size=6, size_dot=0.9, size_line=0.5)
+```
+
+```{r, fig.width=6, fig.height=8}
+check_model(model2, base_size=6, size_dot=0.9, size_line=0.5)
+```
+
+```{r, fig.width=6, fig.height=8}
+check_model(model3, base_size=6, size_dot=0.9, size_line=0.5)
+```
+
+Residuals showed no major violations of model assumptions for model 1, 2 or 3. For the homogeneity of variance plots, shows a slight nonlinear pattern which can be assumed to likely be due to the discrete nature of the variables. Therefore, the assumption of equal variance is considered acceptable.
+
+#### Short results description
+
+From these results, we could say that education can be a predictor of vocabulary scores - with each additional year of schooling linked to higher vocabulary scores,- and being native-born explains a small, but significant additional amount of this variance. However, the effect of education does not differ between native-born and non-native individuals (model 3). Furthermore, many other variables, like social class, income, parental education, cognitive ability, etc could explain part of the relationship between education and vocabulary scores. We also cannot infer causality, since higher education may lead to higher vocabulary, but it’s also possible that individuals with higher language ability stay in education longer.

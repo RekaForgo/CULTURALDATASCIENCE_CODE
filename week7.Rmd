@@ -272,6 +272,11 @@ For this, I have made a checklist you can run through.
 - [ ] Identify your outcome (dependent variable) and predictor(s) (independent variables)  
 - [ ] Determine whether predictors are continuous or categorical  
 
+```{r}
+
+```
+
+
 ### Step 2: Explore Relationships
 - [ ] Plot scatterplots between your predictors and outcome  
 - [ ] Try different plots for categorical variables (boxplots, violin plots, etc.)  
